@@ -20,31 +20,12 @@ class MessageList extends StatefulWidget {
 }
 
 class _MessageListState extends State<MessageList> {
-  List<Message> messages = [];
+  late Future<List<Message>> messages;
 
   @override
   void initState() {
-    loadMessageList();
+    messages = Message.browse();
     super.initState();
-  }
-
-  Future loadMessageList() async {
-    // final content = await rootBundle.loadString('data/messages.json');
-    final response =
-        await dio.get('https://jsonplaceholder.typicode.com/posts');
-    print(response.data);
-    final collection = response.data;
-
-    final loadedMessages = collection.map((e) => Message.fromJson(e)).toList();
-
-    // final loadedMessages = [
-    //   for (final item in collection)
-    //     Message(subject: item['subject'], body: item['body'])
-    // ];
-
-    setState(() {
-      messages = loadedMessages;
-    });
   }
 
   @override
@@ -52,21 +33,51 @@ class _MessageListState extends State<MessageList> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
+        actions: [
+          IconButton(
+            onPressed: () {
+              setState(() {
+                messages = Message.browse();
+              });
+            },
+            icon: const Icon(Icons.refresh),
+          ),
+        ],
       ),
-      body: ListView.builder(
-        itemCount: messages.length,
-        itemBuilder: (ctx, i) => ListTile(
-          isThreeLine: true,
-          leading: const CircleAvatar(
-            child: Text('A'),
-          ),
-          title: Text(messages[i].subject),
-          subtitle: Text(
-            messages[i].body,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
+      body: FutureBuilder(
+        future: messages,
+        builder: (context, snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.none:
+            case ConnectionState.waiting:
+            case ConnectionState.active:
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            case ConnectionState.done:
+              if (snapshot.hasError) {
+                return const Center(
+                  child: Text('Something went wrong.'),
+                );
+              }
+              final messages = snapshot.data;
+              return ListView.builder(
+                itemCount: messages!.length,
+                itemBuilder: (ctx, i) => ListTile(
+                  isThreeLine: true,
+                  leading: const CircleAvatar(
+                    child: Text('A'),
+                  ),
+                  title: Text(messages![i].subject),
+                  subtitle: Text(
+                    messages[i].body,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              );
+          }
+        },
       ),
     );
   }

@@ -1,3 +1,5 @@
+import 'package:email_app/message_list.dart';
+
 class Message {
   final String subject;
   final String body;
@@ -10,4 +12,15 @@ class Message {
   Message.fromJson(Map<String, dynamic> json)
       : subject = json['title'],
         body = json['body'];
+
+  static Future<List<Message>> browse() async {
+    final response =
+        await dio.get('https://jsonplaceholder.typicode.com/posts');
+    final collection = response.data;
+
+    final List<Message> messages =
+        collection.map<Message>((e) => Message.fromJson(e)).toList();
+
+    return messages;
+  }
 }
