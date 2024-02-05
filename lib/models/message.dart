@@ -14,6 +14,9 @@ class Message {
         body = json['body'];
 
   static Future<List<Message>> browse() async {
+    await Future.delayed(
+      const Duration(seconds: 2),
+    );
     final response =
         await dio.get('https://jsonplaceholder.typicode.com/posts');
     final collection = response.data;

@@ -1,9 +1,13 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:email_app/message_compose.dart';
+import 'package:email_app/message_detail.dart';
 import 'package:email_app/models/message.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+import 'compose_button.dart';
 
 final dio = Dio();
 
@@ -63,22 +67,38 @@ class _MessageListState extends State<MessageList> {
               final messages = snapshot.data;
               return ListView.builder(
                 itemCount: messages!.length,
-                itemBuilder: (ctx, i) => ListTile(
-                  isThreeLine: true,
-                  leading: const CircleAvatar(
-                    child: Text('A'),
-                  ),
-                  title: Text(messages![i].subject),
-                  subtitle: Text(
-                    messages[i].body,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
+                itemBuilder: (ctx, i) {
+                  final message = messages[i];
+                  return ListTile(
+                    isThreeLine: true,
+                    leading: const CircleAvatar(
+                      child: Text('A'),
+                    ),
+                    title: Text(
+                      message.subject,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    subtitle: Text(
+                      message.body,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => MessageDetail(
+                          subject: message.subject,
+                          body: message.body,
+                        ),
+                      ),
+                    ),
+                  );
+                },
               );
           }
         },
       ),
+      floatingActionButton: const ComposeButton(),
     );
   }
 }
